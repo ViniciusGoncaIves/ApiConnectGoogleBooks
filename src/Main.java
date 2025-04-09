@@ -1,15 +1,44 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+        Scanner scanner = new Scanner(System.in);
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+        try {
+            System.out.println("Digite o nome do livro: ");
+            var livro = scanner.nextLine().trim();
+            if (livro.isEmpty()) {
+                System.out.println("Você não digitou nada.");
+                return;
+            }
+
+            var livroEncoded = URLEncoder.encode(livro, StandardCharsets.UTF_8);
+            var key = "Your key";
+            var url = "https://www.googleapis.com/books/v1/volumes?q=" + livroEncoded + "&key=" + key;
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                System.out.println("Requisição feita com sucesso!");
+                System.out.println("Resposta: " + response.body());
+            } else {
+                System.out.println("Erro na requisição: " + response.statusCode());
+                System.out.println("Detalhes: " + response.body());
+            }
+
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Erro ao fazer a requisição: " + e.getMessage());
         }
     }
 }
